@@ -1,0 +1,55 @@
+//
+//  bbb/udp/sender.hpp
+//
+//  Created by 2bit on 2022/08/22.
+//
+
+#ifndef bbb_udp_sender_hpp
+#define bbb_udp_sender_hpp
+
+#include <bbb/udp/socket.hpp>
+
+namespace bbb {
+    namespace udp {
+        struct sender : public socket {
+            void setup(const std::string &host,
+                       std::uint16_t port)
+            {
+                sock.open(boost::asio::ip::udp::v4());
+                
+                target = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(host),
+                                                        port);
+                boost::asio::socket_base::broadcast option{true};
+                sock.set_option(option);
+            }
+            
+            bool send(void *buffer, std::size_t size) {
+                return send_buffer(boost::asio::buffer(buffer, size));
+            }
+
+            bool send(const std::vector<std::uint8_t> &buffer) {
+                return send_buffer(boost::asio::buffer(buffer));
+            }
+
+            bool send(const std::string &buffer) {
+                return send_buffer(boost::asio::buffer(buffer));
+            }
+        protected:
+            boost::asio::ip::udp::endpoint target;
+            template <typename buffer_t>
+            bool send_buffer(const buffer_t &buffer) {
+                boost::system::error_code err;
+                sock.send_to(buffer,
+                             target,
+                             0,
+                             err);
+                if(err == boost::system::errc::errc_t::success) return true;
+                std::cerr << "error on bbb::udp::sender::send: error code is " << err.value() << std::endl;
+                return false;
+            }
+        }; // struct sender
+    }; // namespace udp
+}; // namespace bbb
+
+
+#endif /* bbb_udp_sender_hpp */
