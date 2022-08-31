@@ -7,7 +7,7 @@
 int main() {
     auto &manager = bbb::osc::receiver::manager::shared();
     auto receiver = manager.get(26666);
-    receiver->add_callback("/test", [] {
+    receiver->bind("/test", [] {
         std::cout << "received /test" << std::endl;
     });
 
