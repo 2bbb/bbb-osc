@@ -31,31 +31,32 @@ namespace bbb {
                     ArgumentTypes && ... arguments)
             : address(address)
             {
-                addArguments(std::forward<ArgumentType>(argument), std::forward<ArgumentTypes>(arguments) ...);
+                push(std::forward<ArgumentType>(argument),
+                     std::forward<ArgumentTypes>(arguments) ...);
             }
             
-            void addArgument(TagType tag) {
+            void push(TagType tag) {
                 args.emplace_back(tag);
             }
 
             template <typename ArgumentType>
-            void addArgument(TagType tag, ArgumentType &&arg) {
+            void push(TagType tag, ArgumentType &&arg) {
                 args.emplace_back(tag, std::forward<ArgumentType>(arg));
             }
             
             template <typename ArgumentType>
-            void addArguments(ArgumentType &&argument)
+            void push_list(ArgumentType &&argument)
             {
                 args.emplace_back(std::forward<ArgumentType>(argument));
             }
 
             template <typename ArgumentType, typename ... ArgumentTypes>
-            void addArguments(ArgumentType &&argument,
+            void push_list(ArgumentType &&argument,
                               ArgumentTypes && ... arguments)
             {
                 args.emplace_back(std::forward<ArgumentType>(argument));
                 if(sizeof...(arguments)) {
-                    addArguments(std::forward<ArgumentTypes>(arguments) ...);
+                    push_list(std::forward<ArgumentTypes>(arguments) ...);
                 }
             }
             

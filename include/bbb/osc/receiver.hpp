@@ -63,14 +63,14 @@ namespace bbb {
                 after_update_callbacks.push_back(callback);
             }
 
-            void add_callback(const std::string &bindAddress,
-                              callback_t callback)
+            void bind(const std::string &bindAddress,
+                      callback_t callback)
             {
                 callbacks.insert(std::make_pair(bindAddress, callback));
             }
             
-            void add_callback(const std::string &bindAddress,
-                              std::function<void()> no_arg_callback)
+            void bind(const std::string &bindAddress,
+                      std::function<void()> no_arg_callback)
             {
                 callback_t callback = [no_arg_callback](const bbb::osc::message &) {
                     no_arg_callback();
@@ -89,26 +89,26 @@ namespace bbb {
             const_iterator cend() const { return leaked_messages.cend(); }
             
             template <typename Prepared>
-            void add_threading_callback(const std::string &bindAddress,
-                                        thread_process<Prepared> thread_process,
-                                        prepared_callback<Prepared> callback)
+            void bind_with_threading(const std::string &bindAddress,
+                                     thread_process<Prepared> thread_process,
+                                     prepared_callback<Prepared> callback)
             {
                 thread_processes.insert(std::make_pair(bindAddress, makeThreadedCallback(thread_process, callback)));
             }
             
             template <typename ThreadProcess, typename Callback>
-            void add_threading_callback(const std::string &bindAddress,
-                                        ThreadProcess tp,
-                                        Callback cb)
+            void bind_with_threading(const std::string &bindAddress,
+                                     ThreadProcess tp,
+                                     Callback cb)
             {
                 static_assert(is_argument_message<ThreadProcess>(), "argument of ThreadProcess is not bbb::osc::message.");
                 static_assert(is_callable<ThreadProcess>::value, "ThreadProcess is not function.");
                 static_assert(is_callable<Callback>::value, "Callback is not function.");
                 static_assert(composable<ThreadProcess, Callback>(), "result of ThreadProcess is not argument of Callback.");
                 
-                add_threadingh_callback(bindAddress,
-                                        static_cast<typename function_info<ThreadProcess>::function_type>(tp),
-                                        static_cast<typename function_info<Callback>::function_type>(cb));
+                bind_with_threading(bindAddress,
+                                    static_cast<typename function_info<ThreadProcess>::function_type>(tp),
+                                    static_cast<typename function_info<Callback>::function_type>(cb));
             }
             
         protected:
@@ -163,25 +163,25 @@ namespace bbb {
                             case OSCPP::Tag::False:
                             case OSCPP::Tag::IMPULSE:
                             case OSCPP::Tag::NIL:
-                                mess.addArgument(tag);
+                                mess.push(tag);
                                 break;
                             case OSCPP::Tag::Char:
-                                mess.addArgument(tag, args.int8());
+                                mess.push(tag, args.int8());
                                 break;
                             case OSCPP::Tag::Int32:
-                                mess.addArgument(tag, args.int32());
+                                mess.push(tag, args.int32());
                                 break;
                             case OSCPP::Tag::Int64:
-                                mess.addArgument(tag, args.int64());
+                                mess.push(tag, args.int64());
                                 break;
                             case OSCPP::Tag::Float:
-                                mess.addArgument(tag, args.float32());
+                                mess.push(tag, args.float32());
                                 break;
                             case OSCPP::Tag::Double:
-                                mess.addArgument(tag, args.float64());
+                                mess.push(tag, args.float64());
                                 break;
                             case OSCPP::Tag::String:
-                                mess.addArgument(tag, args.string());
+                                mess.push(tag, args.string());
                                 break;
                             default:
                                 break;
@@ -228,11 +228,17 @@ namespace bbb {
                     return receiver;
                 }
                 
-                inline void add_callback(std::uint16_t port,
-                                         const std::string &address,
-                                         callback_t callback)
+                inline void bind(std::uint16_t port,
+                                 const std::string &address,
+                                 std::function<void()> callback)
                 {
-                    get(port)->add_callback(address, callback);
+                    get(port)->bind(address, callback);
+                }
+                inline void bind(std::uint16_t port,
+                                 const std::string &address,
+                                 callback_t callback)
+                {
+                    get(port)->bind(address, callback);
                 }
                 
                 inline void update(std::uint16_t port) {
