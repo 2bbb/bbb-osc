@@ -106,9 +106,15 @@ operator type() const {\
 }
 
             define_num_cast_operator(bool);
-            define_num_cast_operator(std::int8_t);
-            define_num_cast_operator(std::int32_t);
-            define_num_cast_operator(std::int64_t);
+            define_num_cast_operator(char);
+            define_num_cast_operator(signed char);
+            define_num_cast_operator(unsigned char);
+            define_num_cast_operator(short);
+            define_num_cast_operator(unsigned short);
+            define_num_cast_operator(int);
+            define_num_cast_operator(unsigned int);
+            define_num_cast_operator(long);
+            define_num_cast_operator(unsigned long);
             define_num_cast_operator(float);
             define_num_cast_operator(double);
 
