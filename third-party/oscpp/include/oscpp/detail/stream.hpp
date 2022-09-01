@@ -185,8 +185,11 @@ public:
     void putCharacter(char c)
     {
         checkWritable(4);
-        char b[4] = { c, 0, 0, 0 };
-        std::memcpy(pos(), b, 4);
+        int32_t x = c;
+        uint32_t uh;
+        memcpy(&uh, &x, 4);
+        const uint32_t un = convert32<B>(uh);
+        std::memcpy(pos(), &un, 4);
         advance(4);
     }
 
