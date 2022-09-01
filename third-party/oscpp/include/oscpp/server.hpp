@@ -119,7 +119,7 @@ public:
     }
     
     inline bool isNumeral(TagType tag) {
-        switch (tag) {
+        switch (static_cast<Tag>(tag)) {
             case Tag::True:
             case Tag::False:
             case Tag::Char:
@@ -135,7 +135,7 @@ public:
     
     template <typename type>
     type getNumAsType(TagType tag) {
-        switch (tag) {
+        switch (static_cast<Tag>(tag)) {
             case Tag::True:
                 return (type)true;
             case Tag::False:
@@ -227,8 +227,9 @@ public:
     {
         const char t = m_tags.getChar();
         if(isNumeral(t)) return getNumAsType<float>(t);
-        switch (t) {
+        switch (static_cast<Tag>(t)) {
             case Tag::String:
+            case Tag::Symbol:
                 return std::stof(m_args.getString());
             default:
                 break;
@@ -261,7 +262,7 @@ public:
      */
     const char* string()
     {
-        if (m_tags.getChar() == 's') {
+        if (m_tags.getChar() == 's' || m_tags.getChar() == 'S') {
             return m_args.getString();
         }
         throw ParseError("Cannot convert argument to string");

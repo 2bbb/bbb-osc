@@ -8,6 +8,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 
 // cite: https://github.com/openframeworks/openFrameworks/blob/0.9.3/addons/ofxOsc/src/ofxOscMessage.h#L70-L87
 /*
@@ -29,40 +30,53 @@
 	*/
 
 namespace OSCPP {
-#define TagCase(Name) case Tag::Name: return #Name;
-    namespace Tag {
-        static constexpr char Int32 = 'i';
-        static constexpr char Int64 = 'h';
-        static constexpr char Float = 'f';
-        static constexpr char Double = 'd';
-        static constexpr char String = 's';
-        static constexpr char Symbol = 'S';
-        static constexpr char Char = 'c';
-        static constexpr char Midi4 = 'm';
-        static constexpr char True = 'T';
-        static constexpr char False = 'F';
-        static constexpr char NIL = 'N';
-        static constexpr char IMPULSE = 'I';
-        static constexpr char Timetag = 't';
+    enum class Tag : char {
+        Int32 = 'i',
+        Int64 = 'h',
+        Float = 'f',
+        Double = 'd',
+        String = 's',
+        Symbol = 'S',
+        Char = 'c',
+        Midi4 = 'm',
+        True = 'T',
+        False = 'F',
+        NIL = 'N',
+        IMPULSE = 'I',
+        Timetag = 't',
     };
+
+    inline namespace {
+        inline static std::ostream &operator<<(std::ostream & os, Tag tag) {
+            return os << static_cast<char>(tag);
+        }
+    };
+
     using TagType = char;
+
+#define TagCase(Name) case Tag::Name: return #Name;
     static std::string TagName(TagType tag) {
-        switch(tag) {
-                TagCase(Int32);
-                TagCase(Int64);
-                TagCase(Float);
-                TagCase(Double);
-                TagCase(String);
-                TagCase(Symbol);
-                TagCase(Char);
-                TagCase(Midi4);
-                TagCase(True);
-                TagCase(False);
-                TagCase(NIL);
-                TagCase(IMPULSE);
-                TagCase(Timetag);
+        switch(static_cast<Tag>(tag)) {
+            TagCase(Int32);
+            TagCase(Int64);
+            TagCase(Float);
+            TagCase(Double);
+            TagCase(String);
+            TagCase(Symbol);
+            TagCase(Char);
+            TagCase(Midi4);
+            TagCase(True);
+            TagCase(False);
+            TagCase(NIL);
+            TagCase(IMPULSE);
+            TagCase(Timetag);
             default: return "unknown tag";
         }
     }
 #undef TagCase
+
+    static std::string TagName(Tag tag) {
+        return TagName(static_cast<TagType>(tag));
+    }
+
 };
