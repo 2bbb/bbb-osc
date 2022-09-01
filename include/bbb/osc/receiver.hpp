@@ -7,7 +7,6 @@
 #ifndef bbb_osc_receiver_hpp
 #define bbb_osc_receiver_hpp
 
-#include <bbb/osc/message_utility.hpp>
 #include <bbb/osc/message.hpp>
 #include <bbb/osc/common.hpp>
 
@@ -157,7 +156,7 @@ namespace bbb {
                     bbb::osc::message mess(address);
                     
                     while(!args.atEnd()) {
-                        TagType tag = args.tag();
+                        Tag tag = static_cast<Tag>(args.tag());
                         switch(tag) {
                             case OSCPP::Tag::True:
                             case OSCPP::Tag::False:

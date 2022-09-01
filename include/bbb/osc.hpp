@@ -9,7 +9,6 @@
 
 #include <bbb/osc/sender.hpp>
 #include <bbb/osc/receiver.hpp>
-#include <bbb/osc/message_utility.hpp>
 #include <bbb/osc/message.hpp>
 #include <bbb/osc/argument.hpp>
 

@@ -1,5 +1,5 @@
 //
-//  bbb/osc/message_utility.hpp
+//  bbb/osc/message/utility.hpp
 //
 //  Created by 2bit on 2022/08/22.
 //
@@ -7,7 +7,8 @@
 #ifndef bbb_osc_message_utility_hpp
 #define bbb_osc_message_utility_hpp
 
-#include <bbb/osc/message.hpp>
+#include <bbb/osc/message/message.hpp>
+
 #include <bbb/core.hpp>
 
 #include <msd/channel.hpp>

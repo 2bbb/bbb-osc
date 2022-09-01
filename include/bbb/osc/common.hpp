@@ -15,7 +15,7 @@
 
 namespace bbb {
     namespace osc {
-        namespace Tag = OSCPP::Tag;
+        using OSCPP::Tag;
         using OSCPP::TagType;
         using OSCPP::TagName;
     };

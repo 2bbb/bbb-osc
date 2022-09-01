@@ -116,6 +116,21 @@ namespace bbb {
             typename std::remove_reference<typename function_info<B>::template argument_type<0>>::type
             >::value;
         }
+
+        template <typename ...>
+        using void_t = void;
+        
+        namespace detail {
+            template <class AlwaysVoid, template <typename ...> class op, class ... args>
+            struct is_detected_impl :std::false_type
+            {};
+            template <template <typename ...> class op, typename ... args>
+            struct is_detected_impl<void_t<op<args ...>>, op, args ...> :std::true_type
+            {};
+        };
+        
+        template<template <typename...> class op, class ...args>
+        using is_detected = detail::is_detected_impl<void, op, args...>;
     }; // inline namespace
 }; // namespace bbb
 
