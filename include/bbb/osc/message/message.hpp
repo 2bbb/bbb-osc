@@ -206,7 +206,7 @@ namespace bbb {
 
         template <typename osc_message>
         inline std::size_t from_osc(const osc_message &m,
-                                    bbb::osc_message &v,
+                                    osc_message &v,
                                     std::size_t offset = 0)
         {
             v = m;
@@ -215,7 +215,7 @@ namespace bbb {
 
         template <typename osc_message>
         inline std::size_t to_osc(osc_message &m,
-                                  const bbb::osc_message &v)
+                                  const osc_message &v)
         {
             m = v;
             return v.size();
