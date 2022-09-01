@@ -4,7 +4,14 @@ cd $(dirname $0)/..
 BASEDIR=$(pwd)
 EXDIR=${BASEDIR}/examples
 
-INCLUDE_DIRS="-I./include -I./third-party/boost-asio/include -I./third-party/msd/include -I./third-party/oscpp/include"
+INCLUDE_DIRS=$(cat << EOS
+-I./include
+-I./third-party/boost-asio/include
+-I./third-party/msd/include
+-I./third-party/oscpp/include
+-I./third-party/bbb-logger/include
+EOS
+)
 CXXFLAGS="-std=c++11"
 
 mkdir -p ./bin

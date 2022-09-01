@@ -101,13 +101,13 @@ namespace bbb {
                                      Callback cb)
             {
                 static_assert(is_argument_message<ThreadProcess>(), "argument of ThreadProcess is not bbb::osc::message.");
-                static_assert(is_callable<ThreadProcess>::value, "ThreadProcess is not function.");
-                static_assert(is_callable<Callback>::value, "Callback is not function.");
+                static_assert(has_call_operator<ThreadProcess>::value, "ThreadProcess is not function.");
+                static_assert(has_call_operator<Callback>::value, "Callback is not function.");
                 static_assert(composable<ThreadProcess, Callback>(), "result of ThreadProcess is not argument of Callback.");
                 
                 bind_with_threading(bindAddress,
-                                    static_cast<typename function_info<ThreadProcess>::function_type>(tp),
-                                    static_cast<typename function_info<Callback>::function_type>(cb));
+                                    static_cast<typename function_traits<ThreadProcess>::function_type>(tp),
+                                    static_cast<typename function_traits<Callback>::function_type>(cb));
             }
             
         protected:
