@@ -2,7 +2,8 @@
 
 if (( $# < 1 ))
 then
-    echo no arguments
+    echo no argument is given
+    echo ex: ./update-boost.sh 1.8.0
     exit 1
 fi
 
