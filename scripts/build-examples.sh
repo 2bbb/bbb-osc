@@ -12,6 +12,7 @@ INCLUDE_DIRS=$(cat << EOS
 -I./third-party/bit_by_bit/include
 EOS
 )
+
 CXXFLAGS="-std=c++11"
 
 mkdir -p ./bin
@@ -20,8 +21,7 @@ function build_example() {
     NAME=${1}
     g++ -o bin/${NAME} \
         ${CXXFLAGS} \
-        ${INCLUDE_DIRS} \
-        ${DEFINE_MACROS} \
+        ${INCLUDE_DIRS} \\
         ${EXDIR}/${NAME}.cpp
 }
 
