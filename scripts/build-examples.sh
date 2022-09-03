@@ -9,7 +9,7 @@ INCLUDE_DIRS=$(cat << EOS
 -I./third-party/boost-asio/include
 -I./third-party/msd/include
 -I./third-party/oscpp/include
--I./third-party/bbb-logger/include
+-I./third-party/bit_by_bit/include
 EOS
 )
 CXXFLAGS="-std=c++11"
