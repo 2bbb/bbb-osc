@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.3)
+project(bbb-osc CXX)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ftemplate-backtrace-limit=0 -pthread")
+
+file(GLOB SOURCE_FILES examples/*.cpp)
+file(GLOB INCLUDE_DIRS third-party/*/include)
+list(FILTER INCLUDE_DIRS EXCLUDE REGEX ".*/boost-.*$")
+file(GLOB BOOST_DIR third-party/boost-asio/include)
+list(APPEND INCLUDE_DIRS "${BOOST_DIR}")
+foreach(INCLUDE_DIR ${INCLUDE_DIRS})
+    message("INCLUDE_DIR: ${INCLUDE_DIR}")
+endforeach()
+
+include_directories(./include)
+include_directories(${INCLUDE_DIRS})
+
+foreach(SOURCE_FILE ${SOURCE_FILES})
+    message("SOURCE_FILE: ${SOURCE_FILE}")
+    string(REPLACE ".cpp" "" TMP_NAME ${SOURCE_FILE})
+    get_filename_component(EXEC_NAME ${TMP_NAME} NAME_WE)
+    # message("${TMP_NAME} ${EXEC_NAME} ${SOURCE_FILE}")
+    add_executable(${EXEC_NAME} ${SOURCE_FILE})
+    set_target_properties(${EXEC_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+endforeach()
