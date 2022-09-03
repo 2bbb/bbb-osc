@@ -1,3 +1,6 @@
 [submodule "third-party/bit_by_bit"]
 	path = third-party/bit_by_bit
 	url = https://github.com/2bbb/bit_by_bit.git
+[submodule "third-party/oscpp"]
+	path = third-party/oscpp
+	url = https://github.com/2bbb/oscpp.git
