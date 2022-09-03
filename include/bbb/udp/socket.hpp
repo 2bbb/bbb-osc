@@ -1,8 +1,20 @@
-//
-//  bbb/udp/socket.hpp
-//
-//  Created by 2bit on 2022/08/22.
-//
+/* **** **** **** **** **** **** **** **** *
+ *
+ *         _/        _/        _/
+ *        _/_/_/    _/_/_/    _/_/_/
+ *       _/    _/  _/    _/  _/    _/
+ *      _/    _/  _/    _/  _/    _/
+ *     _/_/_/    _/_/_/    _/_/_/
+ *
+ * bit by bit
+ * bbb/udp/socket.hpp
+ *
+ * author: ISHII 2bit
+ * mail:   bit_by_bit@2bit.jp
+ *
+ * **** **** **** **** **** **** **** **** */
+
+#pragma once
 
 #ifndef bbb_udp_socket_hpp
 #define bbb_udp_socket_hpp

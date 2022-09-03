@@ -1,8 +1,20 @@
-//
-//  bbb/osc.hpp
-//
-//  Created by 2bit on 2022/08/20.
-//
+/* **** **** **** **** **** **** **** **** *
+ *
+ *         _/        _/        _/
+ *        _/_/_/    _/_/_/    _/_/_/
+ *       _/    _/  _/    _/  _/    _/
+ *      _/    _/  _/    _/  _/    _/
+ *     _/_/_/    _/_/_/    _/_/_/
+ *
+ * bit by bit
+ * bbb/osc.hpp
+ *
+ * author: ISHII 2bit
+ * mail:   bit_by_bit@2bit.jp
+ *
+ * **** **** **** **** **** **** **** **** */
+
+#pragma once
 
 #ifndef bbb_osc_hpp
 #define bbb_osc_hpp

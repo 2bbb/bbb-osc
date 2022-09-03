@@ -1,9 +1,20 @@
-//
-//  bbb/osc/common.hpp
-//  OSCSocketDev
-//
-//  Created by 2bit on 2022/08/22.
-//
+/* **** **** **** **** **** **** **** **** *
+ *
+ *         _/        _/        _/
+ *        _/_/_/    _/_/_/    _/_/_/
+ *       _/    _/  _/    _/  _/    _/
+ *      _/    _/  _/    _/  _/    _/
+ *     _/_/_/    _/_/_/    _/_/_/
+ *
+ * bit by bit
+ * bbb/osc/common.hpp
+ *
+ * author: ISHII 2bit
+ * mail:   bit_by_bit@2bit.jp
+ *
+ * **** **** **** **** **** **** **** **** */
+
+#pragma once
 
 #ifndef bbb_osc_common_hpp
 #define bbb_osc_common_hpp

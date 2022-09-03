@@ -1,8 +1,20 @@
-//
-//  bbb/osc/sender.hpp
-//
-//  Created by 2bit on 2022/08/22.
-//
+/* **** **** **** **** **** **** **** **** *
+ *
+ *         _/        _/        _/
+ *        _/_/_/    _/_/_/    _/_/_/
+ *       _/    _/  _/    _/  _/    _/
+ *      _/    _/  _/    _/  _/    _/
+ *     _/_/_/    _/_/_/    _/_/_/
+ *
+ * bit by bit
+ * bbb/osc/sender.hpp
+ *
+ * author: ISHII 2bit
+ * mail:   bit_by_bit@2bit.jp
+ *
+ * **** **** **** **** **** **** **** **** */
+
+#pragma once
 
 #ifndef bbb_osc_sender_hpp
 #define bbb_osc_sender_hpp
