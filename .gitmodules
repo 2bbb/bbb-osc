@@ -4,3 +4,6 @@
 [submodule "third-party/oscpp"]
 	path = third-party/oscpp
 	url = https://github.com/2bbb/oscpp.git
+[submodule "third-party/cpp-channel"]
+	path = third-party/cpp-channel
+	url = git@github.com:andreiavrammsd/cpp-channel.git

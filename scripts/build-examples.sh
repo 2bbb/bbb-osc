@@ -7,7 +7,7 @@ EXDIR=${BASEDIR}/examples
 INCLUDE_DIRS=$(cat << EOS
 -I./include
 -I./third-party/boost-asio/include
--I./third-party/msd/include
+-I./third-party/cpp-channel/include
 -I./third-party/oscpp/include
 -I./third-party/bit_by_bit/include
 EOS
