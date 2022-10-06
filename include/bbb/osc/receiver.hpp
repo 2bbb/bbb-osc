@@ -44,6 +44,10 @@ namespace bbb {
             
             using bbb::udp::receiver::setup;
             
+            static void update(std::uint16_t port) {
+                get(port)->update(port);
+            }
+
             void update() {
                 before_update();
                 
@@ -236,7 +240,7 @@ namespace bbb {
                         std::cerr << "bbb::osc::receiver::manager::setup: failed to setup " << port << std::endl;
                         return std::shared_ptr<derived_receiver>();
                     }
-                    receivers[port] = receiver;
+                    receivers.insert(std::make_pair(port, receiver));
                     return receiver;
                 }
                 
@@ -272,8 +276,18 @@ namespace bbb {
                 manager() {};
                 manager(const manager &) = delete;;
                 manager &operator=(const manager &) = delete;
-                friend class receiver;
+                friend class bbb::osc::receiver;
             }; // struct manager
+
+            template <typename derived_receiver = bbb::osc::receiver>
+            static auto get(std::uint16_t port)
+                -> typename std::enable_if<
+                    std::is_base_of<bbb::osc::receiver, derived_receiver>::value,
+                    std::shared_ptr<derived_receiver>
+                >::type
+            {
+                return manager::shared().get<derived_receiver>(port);
+            }
         }; // struct receiver
     }; // namespace osc
 }; // namespace bbb
