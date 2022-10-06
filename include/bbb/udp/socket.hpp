@@ -28,9 +28,10 @@ namespace bbb {
     namespace udp {
         struct socket {
             socket()
-            : sock(io_service) {}
+            : io_context{}
+            , sock{io_context} {}
         protected:
-            boost::asio::io_service io_service;
+            boost::asio::io_context io_context;
             boost::asio::ip::udp::socket sock;
         }; // struct socket
     }; // namespace udp

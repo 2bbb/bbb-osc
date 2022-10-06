@@ -42,7 +42,7 @@ namespace bbb {
             BBB_NO_DISCARD bool setup(std::uint16_t port) {
                 try {
                     auto endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port);
-                    sock = boost::asio::ip::udp::socket(io_service,
+                    sock = boost::asio::ip::udp::socket(io_context,
                                                         endpoint);
                     binded_port = port;
                 } catch(std::exception &e) {
