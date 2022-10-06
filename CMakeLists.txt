@@ -1,3 +1,13 @@
+# # # # # # # # # # # # # # # # # # 
+#
+#      _/        _/        _/
+#     _/_/_/    _/_/_/    _/_/_/
+#    _/    _/  _/    _/  _/    _/
+#   _/    _/  _/    _/  _/    _/
+#  _/_/_/    _/_/_/    _/_/_/
+#
+# # # # # # # # # # # # # # # # # #
+
 cmake_minimum_required(VERSION 3.3)
 project(bbb-osc CXX)
 
@@ -16,7 +26,7 @@ include_directories(./include)
 include_directories(${INCLUDE_DIRS})
 
 foreach(SOURCE_FILE ${SOURCE_FILES})
-    message("SOURCE_FILE: ${SOURCE_FILE}")
+    message("compiling source file: ${SOURCE_FILE}")
     string(REPLACE ".cpp" "" TMP_NAME ${SOURCE_FILE})
     get_filename_component(EXEC_NAME ${TMP_NAME} NAME_WE)
     # message("${TMP_NAME} ${EXEC_NAME} ${SOURCE_FILE}")

@@ -5,23 +5,40 @@
 #include <iostream>
 
 namespace test {
-    struct hoge_t {
+    struct simple_struct {
         int x;
         float y;
         double z;
     };
 
-    std::size_t to_osc(bbb::osc::message &m, const hoge_t &v) {
+    std::size_t to_osc(bbb::osc::message &m, const simple_struct &v) {
         m.push_list(v.x, v.y, v.z);
         return 3;
     }
 
-    std::size_t from_osc(const bbb::osc::message &m, hoge_t &v, std::size_t offset = 0) {
-        v.x = m[offset].get<int>();
+    std::size_t from_osc(const bbb::osc::message &m, simple_struct &v, std::size_t offset = 0) {
+        v.x = m[offset];
         v.y = m[offset + 1];
         v.z = m[offset + 2];
         return 3;
     }
+
+    struct has_convert {
+        int x;
+        float y;
+        double z;
+
+        std::size_t to_osc(bbb::osc::message &m) const {
+            m.push_list(x, y, z);
+            return 3;
+        }
+        std::size_t from_osc(const bbb::osc::message &m, std::size_t offset = 0) {
+            x = m[offset];
+            y = m[offset + 1];
+            z = m[offset + 2];
+            return 3;
+        }
+    };
 };
 
 int main() {
@@ -35,16 +52,22 @@ int main() {
         std::cout << std::endl;
 
         int n;
-        test::hoge_t v;
+        test::simple_struct v;
         m.to(n, v);
+        n = m[0];
+        v = m.get<test::simple_struct>(1);
         std::cout << "n " << n << " v.x " << v.x << " v.y " << v.y << " v.z " << v.z << std::endl;
+
+        // test::has_convert w;
+        // w = m.get<test::has_convert>(1);
+        // std::cout << "n " << n << " v.x " << v.x << " v.y " << v.y << " v.z " << v.z << std::endl;
     });
 
     bbb::osc::sender sender;
-    sender.setup("127.0.0.1", 26666);
+    sender.setup("localhost", 26666);
 
     int i = 0;
-    test::hoge_t v{};
+    test::simple_struct v{};
     while(true) {
         manager.update();
         if(i % 100 == 0) {
