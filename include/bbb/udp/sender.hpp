@@ -39,8 +39,11 @@ namespace bbb {
             {
                 sock.open(boost::asio::ip::udp::v4());
                 
-                target = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(host),
-                                                        port);
+                /// TODO: research more correct way to resolve "localhost"
+                auto ip = host == "localhost"
+                    ? boost::asio::ip::address::from_string("127.0.0.1")
+                    : boost::asio::ip::address::from_string(host);
+                target = boost::asio::ip::udp::endpoint(ip, port);
                 boost::asio::socket_base::broadcast option{true};
                 sock.set_option(option);
             }
