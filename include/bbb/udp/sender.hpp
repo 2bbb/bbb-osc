@@ -62,9 +62,9 @@ namespace bbb {
         protected:
             boost::asio::ip::udp::endpoint target;
             template <typename buffer_t>
-            bool send_buffer(const buffer_t &buffer) {
+            bool send_buffer(buffer_t &&buffer) {
                 boost::system::error_code err;
-                sock.send_to(buffer,
+                sock.send_to(std::forward<buffer_t>(buffer),
                              target,
                              0,
                              err);
