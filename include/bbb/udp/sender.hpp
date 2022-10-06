@@ -24,6 +24,16 @@
 namespace bbb {
     namespace udp {
         struct sender : public socket {
+            struct endpoint {
+                std::string host;
+                std::uint16_t port;
+                bool operator<(const endpoint &rhs) const {
+                    if(host == rhs.host) return port < rhs.port;
+                    return host < rhs.host;
+                }
+            };
+
+
             void setup(const std::string &host,
                        std::uint16_t port)
             {
