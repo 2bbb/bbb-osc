@@ -24,7 +24,7 @@
 
 #include <bbb/udp/receiver.hpp>
 
-#include <msd/channel.hpp>
+#include <bbb/thread/threaded_queue.hpp>
 
 #include <array>
 #include <unordered_map>
@@ -49,15 +49,16 @@ namespace bbb {
                 
                 leaked_messages.clear();
                 bbb::osc::message mess;
-                while(!message_channel.empty()) {
-                    operator<<(mess, message_channel);
-                    std::size_t num = callbacks.count(mess.address);
-                    auto it = callbacks.find(mess.address);
-                    if(it != callbacks.end()) for(std::size_t i = 0, num = callbacks.count(mess.address); i < num; ++it, i++) {
-                        it->second(mess);
-                    } else {
-                        if(!thread_processes.count(mess.address)) {
-                            leaked_messages.push_back(std::move(mess));
+                while(!queued_messages.empty()) {
+                    if(queued_messages.receive(mess)) {
+                        std::size_t num = callbacks.count(mess.address);
+                        auto it = callbacks.find(mess.address);
+                        if(it != callbacks.end()) for(std::size_t i = 0, num = callbacks.count(mess.address); i < num; ++it, i++) {
+                            it->second(mess);
+                        } else {
+                            if(!thread_processes.count(mess.address)) {
+                                leaked_messages.push_back(std::move(mess));
+                            }
                         }
                     }
                 }
@@ -123,7 +124,7 @@ namespace bbb {
             }
             
         protected:
-            msd::channel<bbb::osc::message> message_channel;
+            bbb::threaded_queue<bbb::osc::message> queued_messages;
             std::vector<bbb::osc::message> leaked_messages;
             std::unordered_multimap<std::string, callback_t> callbacks;
             std::unordered_multimap<std::string, abstract_threaded_callback::ref> thread_processes;
@@ -199,7 +200,7 @@ namespace bbb {
                         }
                     }
                     
-                    std::move(mess) >> message_channel;
+                    queued_messages.send(std::move(mess));
                     
                     auto range = thread_processes.equal_range(address);
                     for(auto it = range.first; it != range.second; ++it) {
