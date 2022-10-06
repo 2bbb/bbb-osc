@@ -16,7 +16,6 @@
 
 #pragma once
 
-
 #ifndef bbb_osc_message_convert_from_osc_hpp
 #define bbb_osc_message_convert_from_osc_hpp
 
@@ -26,9 +25,36 @@
 
 #include <bbb/osc/common.hpp>
 
+#include <bbb/core.hpp>
+
 namespace bbb {
     namespace osc {
         namespace convert {
+            template <
+                typename osc_message,
+                typename type,
+                typename = bbb::void_t<>
+            >
+            struct has_from_osc
+            : std::false_type {};
+
+            template <
+                typename osc_message,
+                typename type
+            >
+            struct has_from_osc<
+                osc_message,
+                type,
+                bbb::void_t<
+                    decltype(
+                        std::declval<type>()
+                            .from_osc(std::declval<osc_message &>(),
+                                      std::declval<std::size_t>())
+                    )
+                >
+            >
+            : std::true_type {};
+
 #define BBB_DEF_CONV_OSC(TYPE) \
             template <typename osc_message> \
             inline std::size_t from_osc(const osc_message &m, \
@@ -52,6 +78,21 @@ namespace bbb {
             BBB_DEF_CONV_OSC(double);
 #undef BBB_DEF_CONV_OSC
 
+            template <
+                typename osc_message,
+                typename type
+            >
+            inline auto from_osc(const osc_message &m,
+                                 type &v,
+                                 std::size_t offset = 0)
+                -> bbb::enable_if_t<
+                    has_from_osc<osc_message, type>::value,
+                    std::size_t
+                >
+            {
+                return v.from_osc(m, offset);
+            }
+
             struct from_osc_fn {
                 template <
                     typename osc_message,
@@ -68,7 +109,7 @@ namespace bbb {
         }; // namespace detail
 
         namespace {
-            constexpr const auto& from_osc = bbb::osc::convert::detail::static_const<convert::from_osc_fn>::value;
+            constexpr const auto &from_osc = bbb::osc::convert::detail::static_const<convert::from_osc_fn>::value;
         };
     }; // namespace osc
 }; // namespace bbb
