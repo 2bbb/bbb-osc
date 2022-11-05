@@ -21,9 +21,9 @@
 
 #include <bbb/osc/message/message.hpp>
 
-#include <bbb/core.hpp>
+#include <bbb/thread/threaded_queue.hpp>
 
-#include <msd/channel.hpp>
+#include <bbb/core.hpp>
 
 #include <memory>
 #include <functional>
@@ -49,7 +49,7 @@ namespace bbb {
 
         template <typename Prepared>
         class threaded_callback : public abstract_threaded_callback {
-            msd::channel<Prepared> channel;
+            bbb::threaded_queue<Prepared> queued_messages;
             thread_process<Prepared> thread_proc;
             prepared_callback<Prepared> callback;
             
@@ -61,12 +61,12 @@ namespace bbb {
             
             virtual void process(bbb::osc::message &mess) {
                 Prepared v(thread_proc(mess));
-                std::move(v) >> channel;
+                queued_messages.send(std::move(v));
             }
             virtual void call() {
                 Prepared v;
-                while(!channel.empty()) {
-                    operator<<(v, channel);
+                while(!queued_messages.empty()) {
+                    queued_messages.receive(v);
                     callback(std::move(v));
                 }
             }
