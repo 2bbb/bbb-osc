@@ -44,11 +44,10 @@ namespace bbb {
                 virtual void receive(const boost::system::error_code &error_code,
                                     std::array<char, bbb::udp::buf_size> &buf,
                                     std::size_t len) override
-                {
-                    process_buffer(buf.data(), len);
-                }
+                { process_buffer(buf.data(), len); }
             }; // struct asio_udp_receiver
         }; // namespace detail
+
         using asio_receiver = bbb::osc::custom_receiver<bbb::osc::detail::asio_udp_receiver>;
     }; // namespace osc
 }; // namespace bbb
