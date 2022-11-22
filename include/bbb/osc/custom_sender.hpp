@@ -7,7 +7,7 @@
  *     _/_/_/    _/_/_/    _/_/_/
  *
  * bit by bit
- * bbb/osc/sender.hpp
+ * bbb/osc/custom_sender.hpp
  *
  * author: ISHII 2bit
  * mail:   bit_by_bit@2bit.jp
@@ -16,22 +16,34 @@
 
 #pragma once
 
-#ifndef bbb_osc_sender_hpp
-#define bbb_osc_sender_hpp
+#ifndef bbb_osc_custom_sender_hpp
+#define bbb_osc_custom_sender_hpp
 
 #include <bbb/osc/message.hpp>
 #include <bbb/osc/common.hpp>
 
+#include <bbb/udp/constants.hpp>
 #include <bbb/udp/endpoint.hpp>
-#include <bbb/udp/sender.hpp>
 
 namespace bbb {
     namespace osc {
-        class sender : public bbb::udp::sender {
-        public:
-            using bbb::udp::sender::setup;
-            using endpoint = bbb::udp::endpoint;
+        struct udp_sender_interface {
+            udp_sender_interface() {};
+            virtual ~udp_sender_interface() {};
+            virtual void setup(const std::string &address, std::uint16_t port) = 0;
+        protected:
+            virtual void send_buffer(const void *buffer, std::size_t length) = 0;
+        };
 
+        template <
+            typename udp_sender,
+            typename = typename std::enable_if<
+                std::is_base_of<udp_sender_interface, udp_sender>::value
+                && std::is_default_constructible<udp_sender>::value
+            >::type
+        >
+        struct custom_sender : public udp_sender {
+        public:
             template <typename ... arguments>
             void send(const std::string &address,
                       arguments && ... args)
@@ -51,7 +63,7 @@ namespace bbb {
             {
                 std::uint8_t buffer[bbb::udp::buf_size]{0};
                 auto packet_size = mess.packet(buffer, bbb::udp::buf_size);
-                this->udp::sender::send(buffer, packet_size);
+                this->udp_sender::send_buffer(buffer, packet_size);
             }
 
             struct manager final {
@@ -60,16 +72,16 @@ namespace bbb {
                     return _;
                 }
                 
-                std::map<bbb::osc::sender::endpoint, std::shared_ptr<bbb::osc::sender>> senders;
+                std::map<bbb::udp::endpoint, std::shared_ptr<custom_sender>> senders;
                 
-                template <typename derived_sender = bbb::osc::sender>
+                template <typename derived_sender = custom_sender>
                 auto get(const std::string &host, std::uint16_t port)
                     -> typename std::enable_if<
-                        std::is_base_of<bbb::osc::sender, derived_sender>::value,
+                        std::is_base_of<custom_sender, derived_sender>::value,
                         std::shared_ptr<derived_sender>
                     >::type
                 {
-                    bbb::osc::sender::endpoint endpoint{host, port};
+                    bbb::udp::endpoint endpoint{host, port};
                     auto it = senders.find(endpoint);
                     if(it != senders.end()) {
                         return std::dynamic_pointer_cast<derived_sender>(it->second);
@@ -109,20 +121,20 @@ namespace bbb {
                 manager() {};
                 manager(const manager &) = delete;;
                 manager &operator=(const manager &) = delete;
-                friend class bbb::osc::sender;
+                friend class custom_sender;
             }; // struct manager
 
-            template <typename derived_sender = bbb::osc::sender>
+            template <typename derived_sender = custom_sender>
             static auto get(const std::string &host, std::uint16_t port)
                 -> typename std::enable_if<
-                    std::is_base_of<bbb::osc::sender, derived_sender>::value,
+                    std::is_base_of<custom_sender, derived_sender>::value,
                     std::shared_ptr<derived_sender>
                 >::type
             {
-                return manager::shared().get<derived_sender>(host, port);
+                return manager::shared().template get<derived_sender>(host, port);
             }
-        }; // struct sender
+        }; // struct custom_sender
     }; // namespace osc
 }; // namespace bbb
 
-#endif /* bbb_osc_sender_hpp */
+#endif /* bbb_osc_custom_sender_hpp */

@@ -19,8 +19,14 @@
 #ifndef bbb_osc_hpp
 #define bbb_osc_hpp
 
-#include <bbb/osc/sender.hpp>
-#include <bbb/osc/receiver.hpp>
+#include <bbb/osc/custom_sender.hpp>
+#include <bbb/osc/custom_receiver.hpp>
+
+#if !BBB_OSC_DISABLE_ASIO
+#   include <bbb/osc/sender.hpp>
+#   include <bbb/osc/receiver.hpp>
+#endif
+
 #include <bbb/osc/message.hpp>
 #include <bbb/osc/argument.hpp>
 

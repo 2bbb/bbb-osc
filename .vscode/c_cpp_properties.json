@@ -5,7 +5,6 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/third-party/boost-asio/include",
-                "${workspaceFolder}/third-party/msd/include",
                 "${workspaceFolder}/third-party/oscpp/include",
                 "${workspaceFolder}/third-party/bit_by_bit/include"
             ],

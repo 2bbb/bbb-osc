@@ -19,21 +19,12 @@
 #ifndef bbb_udp_sender_hpp
 #define bbb_udp_sender_hpp
 
+#include <bbb/udp/endpoint.hpp>
 #include <bbb/udp/socket.hpp>
 
 namespace bbb {
     namespace udp {
         struct sender : public socket {
-            struct endpoint {
-                std::string host;
-                std::uint16_t port;
-                bool operator<(const endpoint &rhs) const {
-                    if(host == rhs.host) return port < rhs.port;
-                    return host < rhs.host;
-                }
-            };
-
-
             void setup(const std::string &host,
                        std::uint16_t port)
             {
@@ -48,7 +39,7 @@ namespace bbb {
                 sock.set_option(option);
             }
             
-            bool send(void *buffer, std::size_t size) {
+            bool send(const void *buffer, std::size_t size) {
                 return send_buffer(boost::asio::buffer(buffer, size));
             }
 

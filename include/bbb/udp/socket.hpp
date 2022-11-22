@@ -19,6 +19,7 @@
 #ifndef bbb_udp_socket_hpp
 #define bbb_udp_socket_hpp
 
+#include <bbb/udp/endpoint.hpp>
 #include <bbb/udp/constants.hpp>
 #include <bbb/core.hpp>
 
@@ -30,6 +31,9 @@ namespace bbb {
             socket()
             : io_context{}
             , sock{io_context} {}
+
+            void close()
+            { sock.close(); }
         protected:
             boost::asio::io_context io_context;
             boost::asio::ip::udp::socket sock;
