@@ -35,7 +35,7 @@ namespace bbb {
             udp_receiver_interface() {};
 
             virtual bool setup(std::uint16_t port) = 0;
-
+        protected:
             // will implement on bbb::osc::custom_receiver
             virtual void process_buffer(const char * const data, std::size_t length) {};
         };
@@ -48,7 +48,7 @@ namespace bbb {
             >::type
         >
         struct custom_receiver : public udp_receiver {
-            using callback_t = std::function<void(bbb::osc::message &mess)>;
+            using callback_t = std::function<void(bbb::osc::message &)>;
             
             custom_receiver()
             : udp_receiver() {}
@@ -71,8 +71,10 @@ namespace bbb {
                     if(queued_messages.receive(mess)) {
                         std::size_t num = callbacks.count(mess.address);
                         auto it = callbacks.find(mess.address);
-                        if(it != callbacks.end()) for(std::size_t i = 0, num = callbacks.count(mess.address); i < num; ++it, i++) {
-                            it->second(mess);
+                        if(it != callbacks.end()) {
+                            for(std::size_t i = 0, num = callbacks.count(mess.address); i < num; ++it, i++) {
+                                it->second(mess);
+                            }
                         } else {
                             if(!thread_processes.count(mess.address)) {
                                 leaked_messages.push_back(std::move(mess));
