@@ -244,10 +244,6 @@ namespace bbb {
                     case OSCPP::Tag::String:
                     case OSCPP::Tag::Symbol:
                         return str;
-                    case OSCPP::Tag::True:
-                        return std::string("True");
-                    case OSCPP::Tag::False:
-                        return std::string("False");
                     case OSCPP::Tag::Char:
                         return std::to_string(num.c);
                     case OSCPP::Tag::Int32:
