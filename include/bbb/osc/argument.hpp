@@ -25,19 +25,37 @@
 
 namespace bbb {
     namespace osc {
+        struct midi {
+            uint8_t port;
+            uint8_t status;
+            uint8_t data1;
+            uint8_t data2;
+        };
+        struct color {
+            uint8_t r;
+            uint8_t g;
+            uint8_t b;
+            uint8_t a;
+        };
         struct argument {
             union number_value {
                 bool b;
                 std::int8_t c;
                 std::int32_t i;
+                std::uint32_t u;
                 std::int64_t l;
+                std::uint64_t ul;
+                struct color color;
+                struct midi midi;
                 float f;
                 double d;
             } num;
-            std::string str;
+            
+            std::vector<std::uint8_t> blob;
             
             const Tag tag;
-            
+            std::string str;
+
             argument(bool b)
             : tag(b ? Tag::True : Tag::False) { num.b = b; }
 
@@ -71,6 +89,21 @@ namespace bbb {
             argument(const std::string &str)
             : tag(Tag::String), str(str) {}
             
+            argument(uint8_t byte1, uint8_t byte2, uint8_t byte3, uint8_t byte4)
+            : tag(Tag::Midi4) {
+                num.midi.port = byte1;
+                num.midi.status = byte2;
+                num.midi.data1 = byte3;
+                num.midi.data2 = byte4;
+            }
+            
+            argument(const void *buf, std::size_t size)
+            : tag(Tag::Blob) {
+                blob.clear();
+                blob.resize(size);
+                std::memcpy(blob.data(), buf, size);
+            }
+            
             argument(Tag tag)
             : tag(tag) {
                 switch(static_cast<Tag>(tag)) {
@@ -84,7 +117,7 @@ namespace bbb {
                     case Tag::IMPULSE:
                         break;
                     default:
-                        std::cerr << "bbb::osc::argument" << "invalid message: tag is " << tag << " [" << TagName(tag) << "]. but argument is not given.";
+                        std::cerr << "bbb::osc::argument" << "invalid message: tag is " << tag << " [" << TagName(tag) << "]. but argument is not given." << std::endl;
                 }
             }
 
@@ -115,6 +148,9 @@ namespace bbb {
                     case OSCPP::Tag::Float:  return cast_num(type, f);\
                     case OSCPP::Tag::Double: return cast_num(type, d);\
                     case OSCPP::Tag::String: return static_cast<type>(std::stol(str));\
+                    case OSCPP::Tag::Midi4:  return cast_num(type, u);\
+                    case OSCPP::Tag::RGBA:   return cast_num(type, u);\
+                    case OSCPP::Tag::Timetag:   return cast_num(type, ul);\
                     default:\
                         std::cerr << "bbb::osc::Argument" << ("argument is not " #type ": ") << OSCPP::TagName(tag);\
                         return static_cast<type>(0);\
@@ -131,9 +167,19 @@ namespace bbb {
             define_num_cast_operator(unsigned int);
             define_num_cast_operator(long);
             define_num_cast_operator(unsigned long);
+            define_num_cast_operator(long long);
+            define_num_cast_operator(unsigned long long);
             define_num_cast_operator(float);
             define_num_cast_operator(double);
-
+            
+            operator midi() const {
+                return num.midi;
+            }
+            
+            operator color() const {
+                return num.color;
+            }
+            
 #undef cast_num
 #undef define_num_cast_operator
 
@@ -150,29 +196,45 @@ namespace bbb {
                     case OSCPP::Tag::Symbol:
                         packet.string(str.c_str());
                         break;
-                    case OSCPP::Tag::True: // TODO
+                    case OSCPP::Tag::True:
                         packet.boolean(true);
                         break;
-                    case OSCPP::Tag::False: // TODO
+                    case OSCPP::Tag::False:
                         packet.boolean(false);
                         break;
-                    case OSCPP::Tag::Char: // TODO
+                    case OSCPP::Tag::Char:
                         packet.character(num.c);
                         break;
                     case OSCPP::Tag::Int32:
                         packet.int32(num.i);
                         break;
-                    case OSCPP::Tag::Int64: // TODO
+                    case OSCPP::Tag::Int64:
                         packet.int64(num.l);
                         break;
                     case OSCPP::Tag::Float:
                         packet.float32(num.f);
                         break;
-                    case OSCPP::Tag::Double: // TODO
-                        packet.float64(num.d); // TODO
+                    case OSCPP::Tag::Double:
+                        packet.float64(num.d);
                         break;
-                    default:
-                        // TODO Midi4, NIL, IMPULSE, Timetag
+                    case OSCPP::Tag::Blob:
+                        packet.blob(OSCPP::Blob(blob.data(), blob.size()));
+                        break;
+                    case OSCPP::Tag::Midi4:
+                        packet.midi(num.i);
+                        break;
+                    case OSCPP::Tag::RGBA:
+                        packet.rgba(num.i);
+                        break;
+                    case OSCPP::Tag::IMPULSE:
+                        packet.impulse();
+                        break;
+                    case OSCPP::Tag::NIL:
+                        packet.NIL();
+                        break;
+                    case OSCPP::Tag::Timetag:
+                        // TODO:
+                        packet.timetag(num.ul);
                         break;
                 }
             }
@@ -196,6 +258,20 @@ namespace bbb {
                         return std::to_string(num.f);
                     case OSCPP::Tag::Double:
                         return std::to_string(num.d);
+                    case OSCPP::Tag::Midi4:
+                        return "midi("
+                            + std::to_string(+num.midi.port) + ","
+                            + std::to_string(+num.midi.status) + ","
+                            + std::to_string(+num.midi.data1) + ","
+                            + std::to_string(+num.midi.data2) +
+                        ")";
+                    case OSCPP::Tag::RGBA:
+                        return "rgba("
+                            + std::to_string(+num.color.r) + ","
+                            + std::to_string(+num.color.g) + ","
+                            + std::to_string(+num.color.b) + ","
+                            + std::to_string(+num.color.a) +
+                        ")";
                     default:
                         return TagName(static_cast<char>(tag));
                 }

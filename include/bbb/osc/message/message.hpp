@@ -65,6 +65,12 @@ namespace bbb {
 
         struct message {
             std::string address;
+            
+            std::string binded_ip;
+            std::uint16_t waiting_port;
+            std::string received_host;
+            std::uint16_t received_port;
+
             message() {};
             
             message(const std::string &address)
@@ -90,6 +96,11 @@ namespace bbb {
                 args.emplace_back(tag, arg);
             }
             
+            void push(Tag tag, const void *buf, std::size_t size)
+            {
+                args.emplace_back(buf, size);
+            }
+
             template <typename value_type>
             auto push(value_type v) 
                 -> typename std::enable_if<
@@ -108,7 +119,18 @@ namespace bbb {
                 to_osc(*this, std::forward<value_type>(v));
             }
 
+            // push blob
+            void push(const void *buf, std::size_t size)
+            {
+                args.emplace_back(buf, size);
+            }
 
+//            // push timetag
+//            void push(std::chrono::nanoseconds time)
+//            {
+//                args.emplace_back(arg);
+//            }
+            
             template <typename ArgumentType>
             void push_list(ArgumentType &&argument)
             {

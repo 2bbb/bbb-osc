@@ -3,7 +3,7 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}/include/**",
                 "${workspaceFolder}/third-party/boost-asio/include",
                 "${workspaceFolder}/third-party/oscpp/include",
                 "${workspaceFolder}/third-party/bit_by_bit/include"

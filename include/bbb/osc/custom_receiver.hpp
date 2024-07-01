@@ -34,10 +34,16 @@ namespace bbb {
         struct udp_receiver_interface {
             udp_receiver_interface() {};
 
-            virtual bool setup(std::uint16_t port) = 0;
+            virtual bool setup(std::uint16_t port,
+                               std::string ip = "0.0.0.0") = 0;
         protected:
             // will implement on bbb::osc::custom_receiver
-            virtual void process_buffer(const char * const data, std::size_t length) {};
+            virtual void process_buffer(const char * const data,
+                                        std::size_t length,
+                                        const std::string &waiting_ip = "",
+                                        std::uint16_t waiting_port = 0,
+                                        const std::string &received_host = "",
+                                        std::uint16_t received_port = 0) {};
         };
 
         template <
@@ -54,12 +60,12 @@ namespace bbb {
             : udp_receiver() {}
             
             virtual ~custom_receiver()
-            {}
+            { std::cout << "~custom_receiver" << std::endl; }
             
             using udp_receiver::setup;
             
-            static void update(std::uint16_t port) {
-                get(port)->update(port);
+            static void update(std::uint16_t port, std::string host = "0.0.0.0") {
+                manager::shared().update(port, host);
             }
 
             void update() {
@@ -69,7 +75,6 @@ namespace bbb {
                 bbb::osc::message mess;
                 while(!queued_messages.empty()) {
                     if(queued_messages.receive(mess)) {
-                        std::size_t num = callbacks.count(mess.address);
                         auto it = callbacks.find(mess.address);
                         if(it != callbacks.end()) {
                             for(std::size_t i = 0, num = callbacks.count(mess.address); i < num; ++it, i++) {
@@ -163,11 +168,26 @@ namespace bbb {
                 }
             }
 
-            virtual void process_buffer(const char * const data, std::size_t length) override {
-                handle(OSCPP::Server::Packet(data, length));
+            virtual void process_buffer(const char * const data,
+                                        std::size_t length,
+                                        const std::string &waiting_ip = "",
+                                        std::uint16_t waiting_port = 0,
+                                        const std::string &received_host = "",
+                                        std::uint16_t received_port = 0) override
+            {
+                handle(OSCPP::Server::Packet(data, length),
+                       waiting_ip,
+                       waiting_port,
+                       received_host,
+                       received_port);
             }
 
-            void handle(const OSCPP::Server::Packet &packet) {
+            void handle(const OSCPP::Server::Packet &packet,
+                        const std::string &waiting_ip,
+                        std::uint16_t waiting_port,
+                        const std::string &received_host,
+                        std::uint16_t received_port)
+            {
                 if(packet.isBundle()) {
                     // Convert to bundle
                     OSCPP::Server::Bundle bundle(packet);
@@ -175,7 +195,11 @@ namespace bbb {
                     OSCPP::Server::PacketStream packets(bundle.packets());
                     
                     while(!packets.atEnd()) {
-                        handle(packets.next());
+                        handle(packets.next(),
+                               waiting_ip,
+                               waiting_port,
+                               received_host,
+                               received_port);
                     }
                 } else {
                     OSCPP::Server::Message msg(packet);
@@ -184,6 +208,10 @@ namespace bbb {
                     OSCPP::Server::ArgStream args(msg.args());
                     
                     bbb::osc::message mess(address);
+                    mess.binded_ip = waiting_ip;
+                    mess.waiting_port = waiting_port;
+                    mess.received_host = received_host;
+                    mess.received_port = received_port;
                     
                     while(!args.atEnd()) {
                         Tag tag = static_cast<Tag>(args.tag());
@@ -217,9 +245,9 @@ namespace bbb {
                         }
                     }
                     
-                    queued_messages.send(std::move(mess));
+                    queued_messages.send(mess);
                     
-                    auto range = thread_processes.equal_range(address);
+                    auto &&range = thread_processes.equal_range(address);
                     for(auto it = range.first; it != range.second; ++it) {
                         it->second->process(mess);
                     }
@@ -233,27 +261,47 @@ namespace bbb {
                     return _;
                 }
                 
-                std::map<std::uint16_t, std::shared_ptr<custom_receiver>> receivers;
+                using host_and_port = std::pair<std::string, std::uint16_t>;
+                
+                std::map<host_and_port, std::shared_ptr<custom_receiver>> receivers;
+                mutable std::mutex receivers_lock;
+                
+                bool find(std::uint16_t port, std::string host = "0.0.0.0") const {
+                    host_and_port key{host, port};
+                    auto lock = std::lock_guard(receivers_lock);
+                    auto it = receivers.find(key);
+                    return it != receivers.end();
+                }
                 
                 template <typename derived_receiver = custom_receiver>
-                auto get(std::uint16_t port)
+                auto get(std::uint16_t port, std::string host = "0.0.0.0")
                     -> typename std::enable_if<
-                        std::is_base_of<custom_receiver, derived_receiver>::value,
+                        std::is_base_of<
+                            custom_receiver,
+                            derived_receiver
+                        >::value,
                         std::shared_ptr<derived_receiver>
                     >::type
                 {
-                    auto it = receivers.find(port);
-                    if(it != receivers.end()) {
-                        return std::dynamic_pointer_cast<derived_receiver>(it->second);
+                    host_and_port key{host, port};
+                    {
+                        auto lock = std::lock_guard(receivers_lock);
+                        auto it = receivers.find(key);
+                        if(it != receivers.end()) {
+                            return std::dynamic_pointer_cast<derived_receiver>(it->second);
+                        }
                     }
                     
                     auto receiver = std::make_shared<derived_receiver>();
-                    auto res = receiver->setup(port);
+                    auto res = receiver->setup(port, host);
                     if(!res) {
                         std::cerr << "bbb::osc::custom_receiver::manager::setup: failed to setup " << port << std::endl;
-                        return std::shared_ptr<derived_receiver>();
+                        return {};
                     }
-                    receivers.insert(std::make_pair(port, receiver));
+                    {
+                        auto lock = std::lock_guard(receivers_lock);
+                        receivers.insert(std::make_pair(key, receiver));
+                    }
                     return receiver;
                 }
                 
@@ -261,47 +309,85 @@ namespace bbb {
                                  const std::string &address,
                                  std::function<void()> callback)
                 {
-                    get(port)->bind(address, callback);
+                    bind(port, "0.0.0.0", address, callback);
                 }
+                inline void bind(std::uint16_t port,
+                                 std::string host,
+                                 const std::string &address,
+                                 std::function<void()> callback)
+                {
+                    if(find(port, host)) {
+                        auto lock = std::lock_guard(receivers_lock);
+                        get(port, host)->bind(address, callback);
+                    }
+                }
+                
                 inline void bind(std::uint16_t port,
                                  const std::string &address,
                                  callback_t callback)
                 {
-                    get(port)->bind(address, callback);
+                    bind(port, "0.0.0.0", address, callback);
                 }
-                
-                inline void update(std::uint16_t port) {
-                    get(port)->update();
+                inline void bind(std::uint16_t port,
+                                 std::string host,
+                                 const std::string &address,
+                                 callback_t callback)
+                {
+                    if(find(port, host)) {
+                        auto lock = std::lock_guard(receivers_lock);
+                        get(port, host)->bind(address, callback);
+                    }
+                }
+
+                inline void update(std::uint16_t port, std::string host = "0.0.0.0") {
+                    if(find(port, host)) {
+                        auto lock = std::lock_guard(receivers_lock);
+                        get(port, host)->update();
+                    }
                 }
                 
                 inline void update() {
+                    auto lock = std::lock_guard(receivers_lock);
                     for(auto pair : receivers) {
                         pair.second->update();
                     }
                 }
                 
-                inline void close() {
-                    for(auto pair : receivers) {
-                        pair.second->close();
+                inline void close(std::uint16_t port,
+                                  std::string host = "0.0.0.0")
+                {
+                    if(find(port, host)) {
+//                        get(port, host)->close();
+                        auto lock = std::lock_guard(receivers_lock);
+                        receivers.erase(host_and_port{host, port});
                     }
                 }
+                
+                inline void close() {
+                    for(auto pair : receivers) {
+                        auto lock = std::lock_guard(receivers_lock);
+                        receivers.clear();
+                    }
+                }
+                
             private:
                 manager() {};
                 manager(const manager &) = delete;;
                 manager &operator=(const manager &) = delete;
-                friend class custom_receiver;
+                friend struct custom_receiver;
             }; // struct manager
 
             template <typename derived_receiver = custom_receiver>
-            static auto get(std::uint16_t port)
+            static auto get(std::uint16_t port,
+                            std::string host = "0.0.0.0")
                 -> typename std::enable_if<
                     std::is_base_of<custom_receiver, derived_receiver>::value,
                     std::shared_ptr<derived_receiver>
                 >::type
             {
-                return manager::shared().template get<derived_receiver>(port);
+                return manager::shared().template get<derived_receiver>(port, host);
             }
-        }; // struct receiver
+        }; // struct custom_receiver
     }; // namespace osc
 }; // namespace bbb
 
