@@ -58,8 +58,10 @@ namespace bbb {
                 while(!queued_messages.empty()) {
                     if(queued_messages.receive(mess)) {
                         auto it = callbacks.find(mess.address);
-                        if(it != callbacks.end()) for(std::size_t i = 0, num = callbacks.count(mess.address); i < num; ++it, i++) {
-                            it->second(mess);
+                        if(it != callbacks.end()) {
+                            for(std::size_t i = 0, num = callbacks.count(mess.address); i < num; ++it, i++) {
+                                it->second(mess);
+                            }
                         } else {
                             if(!thread_processes.count(mess.address)) {
                                 leaked_messages.push_back(std::move(mess));
