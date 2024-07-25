@@ -80,19 +80,19 @@ namespace bbb {
                 after_update_callbacks.push_back(callback);
             }
 
-            void bind(const std::string &bindAddress,
+            void bind(const std::string &bind_address,
                       callback_t callback)
             {
-                callbacks.insert(std::make_pair(bindAddress, callback));
+                callbacks.insert(std::make_pair(bind_address, callback));
             }
             
-            void bind(const std::string &bindAddress,
+            void bind(const std::string &bind_address,
                       std::function<void()> no_arg_callback)
             {
                 callback_t callback = [no_arg_callback](const bbb::osc::message &) {
                     no_arg_callback();
                 };
-                callbacks.insert(std::make_pair(bindAddress, callback));
+                callbacks.insert(std::make_pair(bind_address, callback));
             }
 
             using iterator = std::vector<bbb::osc::message>::iterator;
@@ -106,15 +106,15 @@ namespace bbb {
             const_iterator cend() const { return leaked_messages.cend(); }
             
             template <typename Prepared>
-            void bind_with_threading(const std::string &bindAddress,
+            void bind_with_threading(const std::string &bind_address,
                                      thread_process<Prepared> thread_process,
                                      prepared_callback<Prepared> callback)
             {
-                thread_processes.insert(std::make_pair(bindAddress, makeThreadedCallback(thread_process, callback)));
+                thread_processes.insert(std::make_pair(bind_address, makeThreadedCallback(thread_process, callback)));
             }
             
             template <typename ThreadProcess, typename Callback>
-            void bind_with_threading(const std::string &bindAddress,
+            void bind_with_threading(const std::string &bind_address,
                                      ThreadProcess tp,
                                      Callback cb)
             {
@@ -123,7 +123,7 @@ namespace bbb {
                 static_assert(has_call_operator<Callback>::value, "Callback is not function.");
                 static_assert(composable<ThreadProcess, Callback>(), "result of ThreadProcess is not argument of Callback.");
                 
-                bind_with_threading(bindAddress,
+                bind_with_threading(bind_address,
                                     static_cast<typename function_traits<ThreadProcess>::function_type>(tp),
                                     static_cast<typename function_traits<Callback>::function_type>(cb));
             }
@@ -225,10 +225,12 @@ namespace bbb {
                             case OSCPP::Tag::RGBA:
                                 mess.push(tag, args.int32());
                                 break;
-                            case OSCPP::Tag::Blob:
+                            case OSCPP::Tag::Blob: {
                                 //TODO: implement
-                                mess.push(tag, args.blob().data(), args.blob().size());
+                                auto &&blob = args.blob();
+                                mess.push(tag, blob.data(), blob.size());
                                 break;
+                            }
                             case OSCPP::Tag::Timetag:
                                 //TODO: implement
 //
