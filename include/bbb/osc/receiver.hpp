@@ -47,7 +47,7 @@ namespace bbb {
             static void update(std::uint16_t port,
                                std::string local_ip = "0.0.0.0")
             {
-                get(port, local_ip)->update(port);
+                get(port, local_ip)->update();
             }
 
             void update() {
