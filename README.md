@@ -4,11 +4,24 @@ Header only OSC library includes asio udp socket.
 
 ## How to setup
 
+clone
+
 ```cpp
+cd /path/to/you/want/to/use
 git clone --recursive https://github.com/2bbb/bbb-osc.git
 ```
 
+(or download `nightly.zip` and unzip to `/path/to/you/want/to/use`)
+
+add include path to your project:
+
+* `bbb-osc/include`
+* `bbb-osc/third-party/asio/include`
+* `bbb-osc/third-party/bit_by_bit/include`
+* `bbb-osc/third-party/oscpp/include`
+
 ## Simple Usage
+
 ```cpp
 bbb::osc::asio_receiver receiver;
 receiver.setup(26666);
