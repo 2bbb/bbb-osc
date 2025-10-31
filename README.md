@@ -1,5 +1,11 @@
 # bbb-osc
 
+## How to setup
+
+```cpp
+git clone --recursive https://github.com/2bbb/bbb-osc.git
+```
+
 ## Simple Usage
 ```cpp
 bbb::osc::asio_receiver receiver;
