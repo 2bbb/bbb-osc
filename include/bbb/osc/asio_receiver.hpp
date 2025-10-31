@@ -35,15 +35,16 @@ namespace bbb {
                 virtual ~asio_udp_receiver()
                 {}
                 
-                virtual bool setup(std::uint16_t port) override {
+                virtual bool setup(std::uint16_t port, std::string ip = "0.0.0.0") override {
                     auto success = this->bbb::udp::receiver::setup(port);
                     return success;
                 }
                 
             protected:
-                virtual void receive(const boost::system::error_code &error_code,
+                virtual void receive(const asio::error_code &error_code,
                                     std::array<char, bbb::udp::buf_size> &buf,
-                                    std::size_t len) override
+                                    std::size_t len,
+                                 asio::ip::udp::endpoint remote_endpoint) override
                 { process_buffer(buf.data(), len); }
             }; // struct asio_udp_receiver
         }; // namespace detail

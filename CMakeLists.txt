@@ -8,7 +8,7 @@
 #
 # # # # # # # # # # # # # # # # # #
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.6)
 project(bbb-osc CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ftemplate-backtrace-limit=0 -pthread")
@@ -16,8 +16,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -ftemplate-backtrace-limit=0 
 file(GLOB SOURCE_FILES examples/*.cpp)
 file(GLOB INCLUDE_DIRS third-party/*/include)
 list(FILTER INCLUDE_DIRS EXCLUDE REGEX ".*/boost-.*$")
-file(GLOB BOOST_DIR third-party/boost-asio/include)
-list(APPEND INCLUDE_DIRS "${BOOST_DIR}")
+list(APPEND INCLUDE_DIRS "${ASIO_DIR}")
 foreach(INCLUDE_DIR ${INCLUDE_DIRS})
     message("INCLUDE_DIR: ${INCLUDE_DIR}")
 endforeach()

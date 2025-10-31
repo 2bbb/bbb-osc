@@ -23,7 +23,7 @@
 #include <bbb/udp/constants.hpp>
 #include <bbb/core.hpp>
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 namespace bbb {
     namespace udp {
@@ -35,8 +35,8 @@ namespace bbb {
             void close()
             { sock.close(); }
         protected:
-            boost::asio::io_context io_context;
-            boost::asio::ip::udp::socket sock;
+            asio::io_context io_context;
+            asio::ip::udp::socket sock;
         }; // struct socket
     }; // namespace udp
 }; // namespace bbb

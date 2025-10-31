@@ -24,6 +24,7 @@
 #include <array>
 #include <exception>
 #include <thread>
+#include <iostream>
 
 namespace bbb {
     namespace udp {
@@ -44,9 +45,9 @@ namespace bbb {
                                       std::string local_ip = "0.0.0.0")
             {
                 try {
-                    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(local_ip),
-                                                            port);
-                    sock = boost::asio::ip::udp::socket(io_context,
+                    asio::ip::udp::endpoint endpoint(asio::ip::make_address(local_ip),
+                                                    port);
+                    sock = asio::ip::udp::socket(io_context,
                                                         endpoint);
                     sock.non_blocking(true);
                     binded_port = port;
@@ -57,11 +58,11 @@ namespace bbb {
                 }
                 
                 main_loop = std::thread([=]() {
-                    boost::asio::ip::udp::endpoint remote_endpoint;
+                    asio::ip::udp::endpoint remote_endpoint;
                     std::array<char, bbb::udp::buf_size> recv_buf;
                     while(sock.is_open()) {
-                        boost::system::error_code error;
-                        std::size_t len = this->sock.receive_from(boost::asio::buffer(recv_buf),
+                        asio::error_code error;
+                        std::size_t len = this->sock.receive_from(asio::buffer(recv_buf),
                                                                   remote_endpoint,
                                                                   0,
                                                                   error);
@@ -81,10 +82,10 @@ namespace bbb {
         private:
             std::thread main_loop;
         protected:
-            virtual void receive(const boost::system::error_code &error_code,
+            virtual void receive(const asio::error_code &error_code,
                                  std::array<char, bbb::udp::buf_size> &buf,
                                  std::size_t len,
-                                 boost::asio::ip::udp::endpoint remote_endpoint) = 0;
+                                 asio::ip::udp::endpoint remote_endpoint) = 0;
             std::uint16_t binded_port;
             std::string binded_local_ip;
         }; // struct udpreceiver

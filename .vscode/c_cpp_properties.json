@@ -4,7 +4,7 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/include/**",
-                "${workspaceFolder}/third-party/boost-asio/include",
+                "${workspaceFolder}/third-party/asio/include",
                 "${workspaceFolder}/third-party/oscpp/include",
                 "${workspaceFolder}/third-party/bit_by_bit/include"
             ],

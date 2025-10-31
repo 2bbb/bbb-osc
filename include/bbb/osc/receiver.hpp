@@ -26,6 +26,7 @@
 
 #include <bbb/thread/threaded_queue.hpp>
 
+#include <mutex>
 #include <array>
 #include <unordered_map>
 #include <memory>
@@ -150,10 +151,10 @@ namespace bbb {
                 }
             }
 
-            virtual void receive(const boost::system::error_code &error_code,
+            virtual void receive(const asio::error_code &error_code,
                                  std::array<char, bbb::udp::buf_size> &buf,
                                  std::size_t len,
-                                 boost::asio::ip::udp::endpoint remote_endpoint) override
+                                 asio::ip::udp::endpoint remote_endpoint) override
             {
                 handle(OSCPP::Server::Packet(buf.data(), len),
                        binded_local_ip,
@@ -264,7 +265,7 @@ namespace bbb {
 
                 bool find(std::uint16_t port, std::string host = "0.0.0.0") const {
                     port_and_local_ip key{port, host};
-                    auto lock = std::lock_guard(receivers_lock);
+                    auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                     auto it = receivers.find(key);
                     return it != receivers.end();
                 }
@@ -279,7 +280,7 @@ namespace bbb {
                 {
                     auto key = port_and_local_ip{port, local_ip};
                     {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         auto it = receivers.find(key);
                         if(it != receivers.end()) {
                             return std::dynamic_pointer_cast<derived_receiver>(it->second);
@@ -293,7 +294,7 @@ namespace bbb {
                         return std::shared_ptr<derived_receiver>();
                     }
                     {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         receivers.insert(std::make_pair(key, receiver));
                     }
                     return receiver;
@@ -311,7 +312,7 @@ namespace bbb {
                                  std::function<void()> callback)
                 {
                     if(find(port, local_ip)) {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         get(port, local_ip)->bind(address, callback);
                     }
                 }
@@ -328,7 +329,7 @@ namespace bbb {
                                  callback_t callback)
                 {
                     if(find(port, local_ip)) {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         get(port, local_ip)->bind(address, callback);
                     }
                 }
@@ -337,13 +338,13 @@ namespace bbb {
                                    std::string local_ip = "0.0.0.0")
                 {
                     if(find(port, local_ip)) {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         get(port, local_ip)->update();
                     }
                 }
                 
                 inline void update() {
-                    auto lock = std::lock_guard(receivers_lock);
+                    auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                     for(auto pair : receivers) {
                         pair.second->update();
                     }
@@ -354,7 +355,7 @@ namespace bbb {
                 {
                     if(find(port, local_ip)) {
                         get(port, local_ip)->close();
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         receivers.erase(port_and_local_ip{port, local_ip});
                     }
                 }

@@ -268,7 +268,7 @@ namespace bbb {
                 
                 bool find(std::uint16_t port, std::string host = "0.0.0.0") const {
                     host_and_port key{host, port};
-                    auto lock = std::lock_guard(receivers_lock);
+                    auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                     auto it = receivers.find(key);
                     return it != receivers.end();
                 }
@@ -285,7 +285,7 @@ namespace bbb {
                 {
                     host_and_port key{host, port};
                     {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         auto it = receivers.find(key);
                         if(it != receivers.end()) {
                             return std::dynamic_pointer_cast<derived_receiver>(it->second);
@@ -299,7 +299,7 @@ namespace bbb {
                         return {};
                     }
                     {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         receivers.insert(std::make_pair(key, receiver));
                     }
                     return receiver;
@@ -317,7 +317,7 @@ namespace bbb {
                                  std::function<void()> callback)
                 {
                     if(find(port, host)) {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         get(port, host)->bind(address, callback);
                     }
                 }
@@ -334,20 +334,20 @@ namespace bbb {
                                  callback_t callback)
                 {
                     if(find(port, host)) {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         get(port, host)->bind(address, callback);
                     }
                 }
 
                 inline void update(std::uint16_t port, std::string host = "0.0.0.0") {
                     if(find(port, host)) {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         get(port, host)->update();
                     }
                 }
                 
                 inline void update() {
-                    auto lock = std::lock_guard(receivers_lock);
+                    auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                     for(auto pair : receivers) {
                         pair.second->update();
                     }
@@ -358,14 +358,14 @@ namespace bbb {
                 {
                     if(find(port, host)) {
 //                        get(port, host)->close();
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         receivers.erase(host_and_port{host, port});
                     }
                 }
                 
                 inline void close() {
                     for(auto pair : receivers) {
-                        auto lock = std::lock_guard(receivers_lock);
+                        auto &&lock = std::lock_guard<std::mutex>(receivers_lock);
                         receivers.clear();
                     }
                 }

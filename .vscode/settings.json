@@ -96,6 +96,11 @@
         "functional": "cpp",
         "iterator": "cpp",
         "utility": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "__verbose_abort": "cpp",
+        "charconv": "cpp",
+        "execution": "cpp",
+        "print": "cpp",
+        "source_location": "cpp"
     }
 }
