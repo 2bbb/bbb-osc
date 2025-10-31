@@ -1,5 +1,7 @@
 # bbb-osc
 
+Header only OSC library includes asio udp socket.
+
 ## How to setup
 
 ```cpp

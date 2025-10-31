@@ -18,9 +18,9 @@ jobs:
         TZ: 'Asia/Tokyo'
       run: echo "CURRENT_DATETIME=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
     
-    - run: echo "RELEASE_FILENAME=local_2bbb_addons.zip" >> $GITHUB_ENV
-    - run: echo release on ${{ env.CURRENT_DATETIME }} > /home/runner/work/local_2bbb_addons/local_2bbb_addons/version
-    - run: echo commit $(cd /home/runner/work/local_2bbb_addons/local_2bbb_addons && git log --format="%H" -n 1) >> /home/runner/work/local_2bbb_addons/local_2bbb_addons/version
+    - run: echo "RELEASE_FILENAME=bbb-osc.zip" >> $GITHUB_ENV
+    - run: echo release on ${{ env.CURRENT_DATETIME }} > /home/runner/work/bbb-osc/bbb-osc/version
+    - run: echo commit $(cd /home/runner/work/bbb-osc/bbb-osc && git log --format="%H" -n 1) >> /home/runner/work/bbb-osc/bbb-osc/version
 
     # - name: Delete nightly Release and Tag
     #   uses: dev-drprasad/delete-tag-and-release@v1.1
