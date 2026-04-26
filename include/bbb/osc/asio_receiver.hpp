@@ -36,7 +36,7 @@ namespace bbb {
                 {}
                 
                 virtual bool setup(std::uint16_t port, std::string ip = "0.0.0.0") override {
-                    auto success = this->bbb::udp::receiver::setup(port);
+                    auto success = this->bbb::udp::receiver::setup(port, ip);
                     return success;
                 }
                 
