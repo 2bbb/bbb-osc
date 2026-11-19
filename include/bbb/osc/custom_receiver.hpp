@@ -20,6 +20,7 @@
 #define bbb_osc_custom_receiver_hpp
 
 #include <bbb/osc/message.hpp>
+#include <bbb/osc/detail/read_packet.hpp>
 #include <bbb/osc/common.hpp>
 
 #include <bbb/thread/threaded_queue.hpp>
@@ -175,11 +176,15 @@ namespace bbb {
                                         const std::string &received_host = "",
                                         std::uint16_t received_port = 0) override
             {
-                handle(OSCPP::Server::Packet(data, length),
-                       waiting_ip,
-                       waiting_port,
-                       received_host,
-                       received_port);
+                try {
+                    handle(OSCPP::Server::Packet(data, length),
+                           waiting_ip,
+                           waiting_port,
+                           received_host,
+                           received_port);
+                } catch(const OSCPP::Error &) {
+                    // Discard this datagram; keep the transport ready for the next.
+                }
             }
 
             void handle(const OSCPP::Server::Packet &packet,
@@ -188,70 +193,18 @@ namespace bbb {
                         const std::string &received_host,
                         std::uint16_t received_port)
             {
-                if(packet.isBundle()) {
-                    // Convert to bundle
-                    OSCPP::Server::Bundle bundle(packet);
-                    // Get packet stream
-                    OSCPP::Server::PacketStream packets(bundle.packets());
-                    
-                    while(!packets.atEnd()) {
-                        handle(packets.next(),
-                               waiting_ip,
-                               waiting_port,
-                               received_host,
-                               received_port);
-                    }
-                } else {
-                    OSCPP::Server::Message msg(packet);
-                    
-                    std::string address(msg.address());
-                    OSCPP::Server::ArgStream args(msg.args());
-                    
-                    bbb::osc::message mess(address);
+                detail::read_packet(packet, [&](bbb::osc::message &mess) {
                     mess.binded_ip = waiting_ip;
                     mess.waiting_port = waiting_port;
                     mess.received_host = received_host;
                     mess.received_port = received_port;
-                    
-                    while(!args.atEnd()) {
-                        Tag tag = static_cast<Tag>(args.tag());
-                        switch(tag) {
-                            case OSCPP::Tag::True:
-                            case OSCPP::Tag::False:
-                            case OSCPP::Tag::IMPULSE:
-                            case OSCPP::Tag::NIL:
-                                mess.push(tag);
-                                break;
-                            case OSCPP::Tag::Char:
-                                mess.push(tag, args.int8());
-                                break;
-                            case OSCPP::Tag::Int32:
-                                mess.push(tag, args.int32());
-                                break;
-                            case OSCPP::Tag::Int64:
-                                mess.push(tag, args.int64());
-                                break;
-                            case OSCPP::Tag::Float:
-                                mess.push(tag, args.float32());
-                                break;
-                            case OSCPP::Tag::Double:
-                                mess.push(tag, args.float64());
-                                break;
-                            case OSCPP::Tag::String:
-                                mess.push(tag, args.string());
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    
+
                     queued_messages.send(mess);
-                    
-                    auto &&range = thread_processes.equal_range(address);
+                    auto range = thread_processes.equal_range(mess.address);
                     for(auto it = range.first; it != range.second; ++it) {
                         it->second->process(mess);
                     }
-                }
+                });
             }
             
         public:
