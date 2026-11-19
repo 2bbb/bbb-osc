@@ -21,7 +21,12 @@
 
 #include <bbb/osc/common.hpp>
 
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <iostream>
+#include <string>
+#include <vector>
 
 namespace bbb {
     namespace osc {
