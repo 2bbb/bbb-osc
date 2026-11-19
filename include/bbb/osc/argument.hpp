@@ -127,6 +127,8 @@ namespace bbb {
             : tag{tag} { num.i = i; }
             argument(Tag tag, std::int64_t l)
             : tag{tag} { num.l = l; }
+            argument(Tag tag, std::uint64_t value)
+            : tag{tag} { num.ul = value; }
             argument(Tag tag, float f)
             : tag{tag} { num.f = f; }
             argument(Tag tag, double d)
